@@ -3,20 +3,19 @@ from pyrogram import filters
 import random
 from nexichat import nexichat
 
-
-@nexichat.on_message(filters.command(["gn","n","oodnight","ood Night","ood night"], prefixes=["/","g","G"]))
-  def goodnight_command_handler(_, message):
+@nexichat.on_message(filters.command(["gn", "n", "oodnight", "ood Night", "ood night"], prefixes=["/", "g", "G"]))
+def goodnight_command_handler(_, message):
     sender = message.from_user.mention
     send_sticker = random.choice([True, False])
+    
     if send_sticker:
         sticker_id = get_random_sticker()
-        app.send_sticker(message.chat.id, sticker_id)
+        nexichat.send_sticker(message.chat.id, sticker_id)  # Assuming nexichat object is used here
         message.reply_text(f"**❖ ɢᴏᴏᴅ ɴɪɢʜᴛ ❖ sᴡᴇᴇᴛ ᴅʀᴇᴀᴍs ❖**\n\n**❍  {sender} 😴 **\n\n**❖ ɢᴏ ᴛᴏ ➥ sʟᴇᴇᴘ ᴇᴀʀʟʏ**")
     else:
         emoji = get_random_emoji()
-        app.send_message(message.chat.id, emoji)
+        nexichat.send_message(message.chat.id, emoji)  # Assuming nexichat object is used here
         message.reply_text(f"**❖ ɢᴏᴏᴅ ɴɪɢʜᴛ ❖ sᴡᴇᴇᴛ ᴅʀᴇᴀᴍs ❖**\n\n**❍  {sender} {emoji} **\n\n**❖ ɢᴏ ᴛᴏ ➥ sʟᴇᴇᴘ ᴇᴀʀʟʏ**")
-
 
 def get_random_sticker():
     stickers = [
@@ -27,7 +26,6 @@ def get_random_sticker():
         "CAACAgIAAx0Ce9_hCAACaFVlwn-fG58GKoEmmZpVovxEj4PodAACfwwAAqozQUrt2xSTf5Ac4h4E",
     ]
     return random.choice(stickers)
-
 
 def get_random_emoji():
     emojis = [
