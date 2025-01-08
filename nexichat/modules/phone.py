@@ -3,9 +3,9 @@ import requests
 import json
 from nexichat import nexichat  # Assuming nexichat is an instance of the pyrogram Client
 
-# Make sure send_message is working synchronously
-def send_message(message, text):
-    message.reply_text(text)
+# Make sure send_message is working asynchronously
+async def send_message(message, text):
+    await message.reply_text(text)
 
 # Make the check_phone function async
 @nexichat.on_message(filters.command("phone"))
@@ -48,8 +48,8 @@ async def check_phone(client, message):
         g = f"{aa}\n{a}\n{b}\n{c}\n{d}\n{e}\n{f}"
         
         # Send the response to the user
-        send_message(message, g)
+        await send_message(message, g)
         
     except Exception as e:
         # Handle any errors
-        send_message(message, f"Error: {str(e)}")
+        await send_message(message, f"Error: {str(e)}")
