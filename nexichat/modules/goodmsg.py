@@ -1,3 +1,4 @@
+import re
 import random
 from pyrogram import filters
 from nexichat import nexichat  # Assuming this is where the bot is defined
