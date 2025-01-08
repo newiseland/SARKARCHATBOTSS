@@ -39,67 +39,6 @@ replies_cache = []
 blocklist = {}
 message_counts = {}
 
-async def load_replies_cache():
-    global replies_cache
-    replies_cache = await chatai.find().to_list(length=None)
-
-async def save_reply(original_message: Message, reply_message: Message):
-    global replies_cache
-    try:
-        reply_data = {
-            "word": original_message.text,
-            "text": None,
-            "check": "none",
-        }
-
-        if reply_message.sticker:
-            reply_data["text"] = reply_message.sticker.file_id
-            reply_data["check"] = "sticker"
-        elif reply_message.photo:
-            reply_data["text"] = reply_message.photo.file_id
-            reply_data["check"] = "photo"
-        elif reply_message.video:
-            reply_data["text"] = reply_message.video.file_id
-            reply_data["check"] = "video"
-        elif reply_message.audio:
-            reply_data["text"] = reply_message.audio.file_id
-            reply_data["check"] = "audio"
-        elif reply_message.animation:
-            reply_data["text"] = reply_message.animation.file_id
-            reply_data["check"] = "gif"
-        elif reply_message.voice:
-            reply_data["text"] = reply_message.voice.file_id
-            reply_data["check"] = "voice"
-        elif reply_message.text:
-            translated_text = reply_message.text
-            
-            reply_data["text"] = translated_text
-            reply_data["check"] = "none"
-
-        is_chat = await chatai.find_one(reply_data)
-        if not is_chat:
-            await chatai.insert_one(reply_data)
-            replies_cache.append(reply_data)
-
-    except Exception as e:
-        print(f"Error in save_reply: {e}")
-
-async def get_reply(word: str):
-    global replies_cache
-    if not replies_cache:
-        await load_replies_cache()
-        
-    relevant_replies = [reply for reply in replies_cache if reply['word'] == word]
-    if not relevant_replies:
-        relevant_replies = replies_cache
-    return random.choice(relevant_replies) if relevant_replies else None
-
-
-async def get_chat_language(chat_id):
-    chat_lang = await lang_db.find_one({"chat_id": chat_id})
-    return chat_lang["language"] if chat_lang and "language" in chat_lang else None
-    
-            
 @nexichat.on_message(filters.incoming)
 async def chatbot_response(client: Client, message: Message):
     global blocklist, message_counts
@@ -108,6 +47,7 @@ async def chatbot_response(client: Client, message: Message):
         chat_id = message.chat.id
         current_time = datetime.now()
         
+        # Blocklist logic to prevent spam
         blocklist = {uid: time for uid, time in blocklist.items() if time > current_time}
 
         if user_id in blocklist:
@@ -125,21 +65,26 @@ async def chatbot_response(client: Client, message: Message):
             if message_counts[user_id]["count"] >= 6:
                 blocklist[user_id] = current_time + timedelta(minutes=1)
                 message_counts.pop(user_id, None)
-                await message.reply_text(f"**Hey, {message.from_user.mention}**\n\n**You are blocked for 1 minute due to spam messages.**\n**Try again after 1 minute 🤣.**")
+                await message.reply_text(
+                    f"**Hey, {message.from_user.mention}**\n\n"
+                    f"**You are blocked for 1 minute due to spam messages.**\n"
+                    f"**Try again after 1 minute 🤣.**"
+                )
                 return
-        chat_id = message.chat.id
-      
+
+        # Check chat status
         chat_status = await status_db.find_one({"chat_id": chat_id})
-        
         if chat_status and chat_status.get("status") == "disabled":
             return
 
+        # Ignore commands
         if message.text and any(message.text.startswith(prefix) for prefix in ["!", "/", ".", "?", "@", "#"]):
             if message.chat.type in ["group", "supergroup"]:
                 return await add_served_chat(chat_id)
             else:
                 return await add_served_user(chat_id)
-        
+
+        # Process replies
         if (message.reply_to_message and message.reply_to_message.from_user.id == nexichat.id) or not message.reply_to_message:
             reply_data = await get_reply(message.text)
 
@@ -147,12 +92,18 @@ async def chatbot_response(client: Client, message: Message):
                 response_text = reply_data["text"]
                 chat_lang = await get_chat_language(chat_id)
 
+                # Translate the response if language is set
                 if not chat_lang or chat_lang == "nolang":
                     translated_text = response_text
                 else:
                     translated_text = GoogleTranslator(source='auto', target=chat_lang).translate(response_text)
                     if not translated_text:
                         translated_text = response_text
+
+                # Include user's name in the response
+                user_mention = message.from_user.mention
+                personalized_reply = f"**Hey, {user_mention}!**\n\n{translated_text}"
+
                 if reply_data["check"] == "sticker":
                     await message.reply_sticker(reply_data["text"])
                 elif reply_data["check"] == "photo":
@@ -166,14 +117,16 @@ async def chatbot_response(client: Client, message: Message):
                 elif reply_data["check"] == "voice":
                     await message.reply_voice(reply_data["text"])
                 else:
-                    await message.reply_text(translated_text)
+                    await message.reply_text(personalized_reply)
             else:
-                await message.reply_text("**I don't understand. What are you saying?**")
+                user_mention = message.from_user.mention
+                await message.reply_text(f"**Hey, {user_mention}!**\n\n**I don't understand. What are you saying?**")
 
+        # Save new replies
         if message.reply_to_message:
             await save_reply(message.reply_to_message, message)
 
     except MessageEmpty:
         await message.reply_text("🙄🙄")
     except Exception as e:
-        return
+        LOGGER.error(f"Error in chatbot_response: {e}")
