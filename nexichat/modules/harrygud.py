@@ -1,21 +1,43 @@
-import re
-from pyrogram import filters
 import random
-from nexichat import nexichat
+from pyrogram import Client, filters
 
-@nexichat.on_message(filters.command(["gn", "n", "oodnight", "ood Night", "ood night"], prefixes=["/", "g", "G"]))
-def goodnight_command_handler(_, message):
+# Example of an async method you want to await
+async def registered_handler(self, client, message, *args):
+    # Your handler logic here
     sender = message.from_user.mention
     send_sticker = random.choice([True, False])
-    
+
     if send_sticker:
         sticker_id = get_random_sticker()
-        nexichat.send_sticker(message.chat.id, sticker_id)  # Assuming nexichat object is used here
-        message.reply_text(f"**❖ ɢᴏᴏᴅ ɴɪɢʜᴛ ❖ sᴡᴇᴇᴛ ᴅʀᴇᴀᴍs ❖**\n\n**❍  {sender} 😴 **\n\n**❖ ɢᴏ ᴛᴏ ➥ sʟᴇᴇᴘ ᴇᴀʀʟʏ**")
+        await client.send_sticker(message.chat.id, sticker_id)  # Await send_sticker
+        await message.reply_text(f"**❖ ɢᴏᴏᴅ ɴɪɢʜᴛ ❖ sᴡᴇᴇᴛ ᴅʀᴇᴀᴍs ❖**\n\n**❍  {sender} 😴 **\n\n**❖ ɢᴏ ᴛᴏ ➥ sʟᴇᴇᴘ ᴇᴀʀʟʏ**")
     else:
         emoji = get_random_emoji()
-        nexichat.send_message(message.chat.id, emoji)  # Assuming nexichat object is used here
-        message.reply_text(f"**❖ ɢᴏᴏᴅ ɴɪɢʜᴛ ❖ sᴡᴇᴇᴛ ᴅʀᴇᴀᴍs ❖**\n\n**❍  {sender} {emoji} **\n\n**❖ ɢᴏ ᴛᴏ ➥ sʟᴇᴇᴘ ᴇᴀʀʟʏ**")
+        await client.send_message(message.chat.id, emoji)  # Await send_message
+        await message.reply_text(f"**❖ ɢᴏᴏᴅ ɴɪɢʜᴛ ❖ sᴡᴇᴇᴛ ᴅʀᴇᴀᴍs ❖**\n\n**❍  {sender} {emoji} **\n\n**❖ ɢᴏ ᴛᴏ ➥ sʟᴇᴇᴘ ᴇᴀʀʟʏ**")
+
+# Ensure the registered handler is actually an async method
+async def goodnight_command_handler(client, message, *args):
+    # Call the registered handler function (ensure it's async)
+    if callable(self.registered_handler):
+        await self.registered_handler(client, message, *args)
+    else:
+        print("Error: registered_handler is not callable or async.")
+
+# Example of the correct usage of the handler
+@app.on_message(filters.command(["gn", "n", "oodnight", "ood Night", "ood night"], prefixes=["/", "g", "G"]))
+async def goodnight_command_handler(_, message):
+    sender = message.from_user.mention
+    send_sticker = random.choice([True, False])
+
+    if send_sticker:
+        sticker_id = get_random_sticker()
+        await app.send_sticker(message.chat.id, sticker_id)  # Await send_sticker
+        await message.reply_text(f"**❖ ɢᴏᴏᴅ ɴɪɢʜᴛ ❖ sᴡᴇᴇᴛ ᴅʀᴇᴀᴍs ❖**\n\n**❍  {sender} 😴 **\n\n**❖ ɢᴏ ᴛᴏ ➥ sʟᴇᴇᴘ ᴇᴀʀʟʏ**")
+    else:
+        emoji = get_random_emoji()
+        await app.send_message(message.chat.id, emoji)  # Await send_message
+        await message.reply_text(f"**❖ ɢᴏᴏᴅ ɴɪɢʜᴛ ❖ sᴡᴇᴇᴛ ᴅʀᴇᴀᴍs ❖**\n\n**❍  {sender} {emoji} **\n\n**❖ ɢᴏ ᴛᴏ ➥ sʟᴇᴇᴘ ᴇᴀʀʟʏ**")
 
 def get_random_sticker():
     stickers = [
