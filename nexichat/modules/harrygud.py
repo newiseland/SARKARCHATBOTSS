@@ -44,11 +44,11 @@ async def goodnight_command_handler(_, message):
     if send_sticker:
         sticker_id = await get_random_sticker()  # Ensure this is awaited
         await nexichat.send_sticker(message.chat.id, sticker_id)  # Await send_sticker
-        await message.reply_text(f"**❖ ɢᴏᴏᴅ ɴɪɢʜᴛ ❖ sᴡᴇᴇᴛ ᴅʀᴇᴀᴍs ❖**\n\n**❍  {sender} 😴 **\n\n**❖ ɢᴏ ᴛᴏ ➥ sʟᴇᴇᴘ ᴇᴀʀʟʏ**")
+        await message.reply_text(f"**❖ ɢᴏᴏᴅ ᴍᴏʀɴɪɴɢ ❖ ᴡɪsʜɪɴɢ ʏᴏᴜ ᴀ ʙʟɪssғᴜʟ ᴅᴀʏ ❖\n\n❍  {sender} 🌞 \n\n❖ ɢᴏ ᴏᴜᴛ ᴀɴᴅ ᴇxᴘʟᴏʀᴇ!**")
     else:
         emoji = await get_random_emoji()  # Ensure this is awaited
         await nexichat.send_message(message.chat.id, emoji)  # Await send_message
-        await message.reply_text(f"**❖ ɢᴏᴏᴅ ɴɪɢʜᴛ ❖ sᴡᴇᴇᴛ ᴅʀᴇᴀᴍs ❖**\n\n**❍  {sender} {emoji} **\n\n**❖ ɢᴏ ᴛᴏ ➥ sʟᴇᴇᴘ ᴇᴀʀʟʏ**")
+        await message.reply_text(f"**❖ ɢᴏᴏᴅ ᴍᴏʀɴɪɴɢ ❖ ᴡɪsʜɪɴɢ ʏᴏᴜ ᴀ ʙʟɪssғᴜʟ ᴅᴀʏ ❖\n\n❍  {sender} {emoji} \n\n❖ ɢᴏ ᴏᴜᴛ ᴀɴᴅ ᴇxᴘʟᴏʀᴇ!**")
 
 # Define async functions for stickers and emoji
 async def get_random_sticker():
@@ -63,9 +63,9 @@ async def get_random_sticker():
 
 async def get_random_emoji():
     emojis = [
-        "😴",
-        "😪",
-        "💤",
+        "🌞",
+        "🌅",
+        "☀️",
     ]
     return random.choice(emojis)
     
